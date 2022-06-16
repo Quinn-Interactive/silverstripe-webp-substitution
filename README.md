@@ -13,7 +13,7 @@ images.
 ## Installation
 
 ```sh
-composer require quinninteractive/silverstripe-webp-substitution dev-main
+composer require quinninteractive/silverstripe-webp-substitution ^1.0.0
 ```
 
 ## License
@@ -91,4 +91,4 @@ make it writable by the web server.
 
 ## Version
 
-1.0.x-dev
+1.0.0
