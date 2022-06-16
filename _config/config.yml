@@ -1,0 +1,6 @@
+---
+Name: webpsubstitution
+---
+QuinnInteractive\WebPSub\Task\ConvertImagesToWebpTask:
+  webp_directory_name: '.webp'
+  webp_file_suffix: '.webp'
