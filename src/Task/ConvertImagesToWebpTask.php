@@ -142,6 +142,6 @@ class ConvertImagesToWebpTask extends BuildTask
     private function webpPath($path)
     {
         $path = $this->relativePath($path);
-        return $this->webpdir() . $path . $this->config()->get('webp_file_suffix');;
+        return $this->webpdir() . $path . $this->config()->get('webp_file_suffix');
     }
 }
