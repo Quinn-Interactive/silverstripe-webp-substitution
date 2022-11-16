@@ -6,6 +6,7 @@ use Nette\Utils\Finder;
 use SilverStripe\Control\Director;
 use SilverStripe\Dev\BuildTask;
 use WebPConvert\WebPConvert;
+use WebPConvert\Convert\Exceptions\ConversionFailedException;
 
 class ConvertImagesToWebpTask extends BuildTask
 {
@@ -22,7 +23,7 @@ class ConvertImagesToWebpTask extends BuildTask
     {
         $start = time();
         set_time_limit(60 * 60);
-        $converted = $skipped = $broken = 0;
+        $converted = $skipped = $broken = $failed = $general_exception = 0;
         $webpdir = $this->webpdir();
         $assetsdir = $this->assetsdir();
         if (!is_dir($webpdir)) {
@@ -63,9 +64,20 @@ class ConvertImagesToWebpTask extends BuildTask
                     // if the webp file doesn't exist or is newer than the original, create it
                     if (!file_exists($webpPath) || (filemtime($webpPath) < filemtime($path))) {
                         $this->line("- converting: ${relativePath}");
-                        $converted++;
-                        WebPConvert::convert($path, $webpPath);
-                    } else {
+                        $reason = '   !! %s: %s';
+                        try {
+                            WebPConvert::convert($path, $webpPath);
+                            $converted++;
+                        } catch (ConversionFailedException $e) {
+                            $failed++;
+                            $this->line(sprintf($reason, 'conversion failed', $e->getShortMessage()));
+                            continue;
+                        } catch (\Exception $e) {
+                            $general_exception++;
+                            $this->line(sprintf($reason, 'general exception', $e->getMessage()));
+                            continue;
+                    }
+                } else {
                         $skipped++;
                     }
                 }
@@ -79,6 +91,8 @@ class ConvertImagesToWebpTask extends BuildTask
         $this->line('duration: ' . $duration . ' seconds');
         $this->line('converted: ' . $converted);
         $this->line('skipped: ' . $skipped);
+        $this->line('failed: ' . $failed);
+        $this->line('general exceptions: ' . $general_exception);
         $this->line('broken: ' . $broken);
 
         if (!Director::is_cli()) {
