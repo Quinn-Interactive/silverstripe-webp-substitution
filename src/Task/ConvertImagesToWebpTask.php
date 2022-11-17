@@ -4,9 +4,10 @@ namespace QuinnInteractive\WebPSub\Task;
 
 use Nette\Utils\Finder;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;
-use WebPConvert\WebPConvert;
 use WebPConvert\Convert\Exceptions\ConversionFailedException;
+use WebPConvert\WebPConvert;
 
 class ConvertImagesToWebpTask extends BuildTask
 {
@@ -18,12 +19,13 @@ class ConvertImagesToWebpTask extends BuildTask
     ];
     protected $title = "Converts public images to webp";
     private static $segment = 'webpconvert';
+    private static $size_limit_megapixels = 32;
 
     public function run($request)
     {
         $start = time();
         set_time_limit(60 * 60);
-        $converted = $skipped = $broken = $failed = $general_exception = 0;
+        $converted = $skipped = $broken = $failed = $general_exception = $too_big = 0;
         $webpdir = $this->webpdir();
         $assetsdir = $this->assetsdir();
         if (!is_dir($webpdir)) {
@@ -60,6 +62,16 @@ class ConvertImagesToWebpTask extends BuildTask
                     $this->line("- Wrong MimeType: ${mimeType}");
                     $broken++;
                 } else {
+                    $size_info = getimagesize($path);
+                    if (false !== $size_info) {
+                        $megapixels = ($size_info[0] * $size_info[1]) / (1024 * 1024);
+                        if ($megapixels > Config::inst()->get(static::class, 'size_limit_megapixels')) {
+                            $this->line("${relativePath}");
+                            $this->line("- too big: ${megapixels} megapixels");
+                            $too_big++;
+                            continue;
+                        }
+                    }
                     $webpPath = $this->webpPath($path);
                     // if the webp file doesn't exist or is newer than the original, create it
                     if (!file_exists($webpPath) || (filemtime($webpPath) < filemtime($path))) {
@@ -76,8 +88,8 @@ class ConvertImagesToWebpTask extends BuildTask
                             $general_exception++;
                             $this->line(sprintf($reason, 'general exception', $e->getMessage()));
                             continue;
-                    }
-                } else {
+                        }
+                    } else {
                         $skipped++;
                     }
                 }
@@ -91,6 +103,7 @@ class ConvertImagesToWebpTask extends BuildTask
         $this->line('duration: ' . $duration . ' seconds');
         $this->line('converted: ' . $converted);
         $this->line('skipped: ' . $skipped);
+        $this->line('too big: ' . $too_big);
         $this->line('failed: ' . $failed);
         $this->line('general exceptions: ' . $general_exception);
         $this->line('broken: ' . $broken);
