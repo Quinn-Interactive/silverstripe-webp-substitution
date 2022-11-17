@@ -25,10 +25,15 @@ See [License](LICENSE.md)
 If you should need to change the assets-relative directory or the file
 suffix to be used for WebP images, you can do that in the configuration.
 
+There is a default limit of 32 megapixels, over which conversion is not
+attempted. This is to avoid overtaxing the server's virtual memory. This
+setting can be overridden as shown below.
+
 ```yaml
 QuinnInteractive\WebPSub\Task\ConvertImagesToWebpTask:
   webp_directory_path: '.misc/.WebP'
   webp_file_suffix: '.wp'
+  size_limit_megapixels: 16
 ```
 
 ## Command-line example
