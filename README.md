@@ -13,7 +13,7 @@ images.
 ## Installation
 
 ```sh
-composer require quinninteractive/silverstripe-webp-substitution ^1.0.0
+composer require quinninteractive/silverstripe-webp-substitution ^2.0.0
 ```
 
 ## License
@@ -59,25 +59,15 @@ To support this module, add these items to your existing Silverstripe
 configuration. If you have changed the YAML configuration, you will need
 to adjust these items accordingly.
 
-### In the `http` section
-
-```nginx
-# webp dir to try, if we accept webp (or none if not)
-map $http_accept $webp_dir {
-    default   "";
-    "~*image/webp"  "/assets/.webp/";
-}
-```
-
 ### In the `server` section, before the main assets `location` directive
 
 ```nginx
 # first try to return allowed webp
 location ~ ^/assets/.*\.(?i:gif|jpeg|jpg|png)$ {
-    try_files $webp_dir$uri.webp $uri /index.php?$query_string;
+    try_files /assets/.webp/$uri.webp $uri /index.php?$query_string;
 }
 
-# Never serve ^.protected or ^.webp
+# Never serve .protected, nor .webp not served above
 location ~ ^/assets/\.(webp|protected)/ {
     return 403;
 }
