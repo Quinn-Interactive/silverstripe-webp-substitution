@@ -61,6 +61,10 @@ class ConvertImagesToWebpTask extends BuildTask
         $this->header('convert/update any public images to WebP');
         foreach (Finder::findFiles('*.png', '*.jpg', '*.jpeg')->from($assetsdir)->exclude('.*') as $path => $file) {
             if (is_file($path)) {
+                if ($this->isExcludedPath($path)) {
+                    $skipped++;
+                    continue;
+                }
                 $relativePath = $this->relativePath($path);
                 $mimeType = mime_content_type($path);
                 if (!in_array($mimeType, $this->mime_types)) {
