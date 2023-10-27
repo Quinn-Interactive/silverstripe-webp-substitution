@@ -140,7 +140,7 @@ class ConvertImagesToWebpTask extends BuildTask
     private function isExcludedPath(string $path): bool
     {
         foreach ($this->excluded_absolute_paths as $excluded_path) {
-            if (str_starts_with($path, $excluded_path)) {
+            if (str_starts_with(realpath($path), $excluded_path)) { // must resolve symlinks!
                 return true;
             }
         }
