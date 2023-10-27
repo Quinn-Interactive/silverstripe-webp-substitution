@@ -6,6 +6,7 @@ use Nette\Utils\Finder;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\Dev\Debug;
 use WebPConvert\Convert\Exceptions\ConversionFailedException;
 use WebPConvert\WebPConvert;
 
@@ -18,6 +19,8 @@ class ConvertImagesToWebpTask extends BuildTask
         'image/jpg',
     ];
     protected $title = "Converts public images to webp";
+    private array $excluded_absolute_paths = [];
+    private static array $exclude_paths = [];
     private static $segment = 'webpconvert';
     private static $size_limit_megapixels = 32;
 
@@ -28,6 +31,12 @@ class ConvertImagesToWebpTask extends BuildTask
         $converted = $skipped = $broken = $failed = $general_exception = $too_big = 0;
         $webpdir = $this->webpdir();
         $assetsdir = $this->assetsdir();
+        $exclude_paths = $this->config()->get('exclude_paths');
+        array_walk($exclude_paths, function (&$value, $index) {
+            $value = realpath(sprintf('%s/%s', Director::publicFolder(), $value));
+        });
+        $this->excluded_absolute_paths = $exclude_paths;
+        unset($exclude_paths);
         if (!is_dir($webpdir)) {
             mkdir($webpdir); // TODO permissions?
         }
@@ -45,8 +54,8 @@ class ConvertImagesToWebpTask extends BuildTask
                 $relativePath = $this->relativePath($path);
                 $this->line("checking: ${relativePath}");
                 $originalPath = $this->originalImagePath($path);
-                if (!is_file($originalPath)) {
-                    $this->line("- original missing; deleting webp file");
+                if ($this->isExcludedPath($originalPath) || !is_file($originalPath)) {
+                    $this->line("- original missing or excluded; deleting webp file");
                     unlink($path);
                 }
             }
@@ -125,6 +134,16 @@ class ConvertImagesToWebpTask extends BuildTask
         } else {
             echo "<h2><br />${string}</h2>";
         }
+    }
+
+    private function isExcludedPath(string $path): bool
+    {
+        foreach ($this->excluded_absolute_paths as $excluded_path) {
+            if (str_starts_with($path, $excluded_path)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function line($string)
