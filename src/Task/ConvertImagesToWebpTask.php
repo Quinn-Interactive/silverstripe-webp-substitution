@@ -6,7 +6,6 @@ use Nette\Utils\Finder;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\Dev\Debug;
 use WebPConvert\Convert\Exceptions\ConversionFailedException;
 use WebPConvert\WebPConvert;
 
@@ -51,11 +50,9 @@ class ConvertImagesToWebpTask extends BuildTask
             // $path is a string containing absolute filename with path
             // $file is an instance of SplFileInfo
             if (is_file($path)) {
-                $relativePath = $this->relativePath($path);
-                $this->line("checking: ${relativePath}");
                 $originalPath = $this->originalImagePath($path);
                 if ($this->isExcludedPath($originalPath) || !is_file($originalPath)) {
-                    $this->line("- original missing or excluded; deleting webp file");
+                    $this->line("{$originalPath} - original missing or excluded; deleting webp file");
                     unlink($path);
                 }
             }
