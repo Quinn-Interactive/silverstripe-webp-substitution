@@ -27,7 +27,9 @@ suffix to be used for WebP images, you can do that in the configuration.
 
 There is a default limit of 32 megapixels, over which conversion is not
 attempted. This is to avoid overtaxing the server's virtual memory. This
-setting can be overridden as shown below.
+setting can be overridden as shown below. If you change the
+`webp_file_suffix`, you must also change the suffix in your nginx
+configuration (see example below).
 
 ```yaml
 QuinnInteractive\WebPSub\Task\ConvertImagesToWebpTask:
@@ -59,12 +61,27 @@ To support this module, add these items to your existing Silverstripe
 configuration. If you have changed the YAML configuration, you will need
 to adjust these items accordingly.
 
+### In the `http` section
+
+```nginx
+# webp dir to try, if we accept webp (or none if not)
+map $http_accept $webp_dir {
+    default   "";
+    "~*image/webp"  "/assets/.webp/";
+}
+
+map $arg_nowebp $accept_webp {
+    default   $webp_dir;
+    '1'    "/fail-on-purpose/";
+}
+```
+
 ### In the `server` section, before the main assets `location` directive
 
 ```nginx
 # first try to return allowed webp
 location ~ ^/assets/.*\.(?i:gif|jpeg|jpg|png)$ {
-    try_files /assets/.webp/$uri.webp $uri /index.php?$query_string;
+    try_files $accept_webp$uri.webp $uri /index.php?$query_string;
 }
 
 # Never serve .protected, nor .webp not served above
