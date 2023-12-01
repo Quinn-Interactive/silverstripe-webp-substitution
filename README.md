@@ -103,4 +103,14 @@ make it writable by the web server.
 
 ## Version
 
-2.0.0
+2.1.0
+
+## Release notes
+
+### 2.1.0
+
+This version introduces a backward-compatible feature so that converted
+WebP files are not used in the CMS. To take advantage of this new
+feature, you need to change your nginx configuration (see example
+above). If you do not make the changes, your site will work just as it
+did in earlier versions, so this is a non-breaking change.
