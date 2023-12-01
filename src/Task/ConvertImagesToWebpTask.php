@@ -18,6 +18,8 @@ class ConvertImagesToWebpTask extends BuildTask
         'image/jpg',
     ];
     protected $title = "Converts public images to webp";
+    private array $excluded_absolute_paths = [];
+    private static array $exclude_paths = [];
     private static $segment = 'webpconvert';
     private static $size_limit_megapixels = 32;
 
@@ -28,6 +30,12 @@ class ConvertImagesToWebpTask extends BuildTask
         $converted = $skipped = $broken = $failed = $general_exception = $too_big = 0;
         $webpdir = $this->webpdir();
         $assetsdir = $this->assetsdir();
+        $exclude_paths = $this->config()->get('exclude_paths');
+        array_walk($exclude_paths, function (&$value, $index) {
+            $value = realpath(sprintf('%s/%s', Director::publicFolder(), $value));
+        });
+        $this->excluded_absolute_paths = $exclude_paths;
+        unset($exclude_paths);
         if (!is_dir($webpdir)) {
             mkdir($webpdir); // TODO permissions?
         }
@@ -42,11 +50,9 @@ class ConvertImagesToWebpTask extends BuildTask
             // $path is a string containing absolute filename with path
             // $file is an instance of SplFileInfo
             if (is_file($path)) {
-                $relativePath = $this->relativePath($path);
-                $this->line("checking: ${relativePath}");
                 $originalPath = $this->originalImagePath($path);
-                if (!is_file($originalPath)) {
-                    $this->line("- original missing; deleting webp file");
+                if ($this->isExcludedPath($originalPath) || !is_file($originalPath)) {
+                    $this->line("{$originalPath} - original missing or excluded; deleting webp file");
                     unlink($path);
                 }
             }
@@ -55,6 +61,10 @@ class ConvertImagesToWebpTask extends BuildTask
         $this->header('convert/update any public images to WebP');
         foreach (Finder::findFiles('*.png', '*.jpg', '*.jpeg')->from($assetsdir)->exclude('.*') as $path => $file) {
             if (is_file($path)) {
+                if ($this->isExcludedPath($path)) {
+                    $skipped++;
+                    continue;
+                }
                 $relativePath = $this->relativePath($path);
                 $mimeType = mime_content_type($path);
                 if (!in_array($mimeType, $this->mime_types)) {
@@ -125,6 +135,16 @@ class ConvertImagesToWebpTask extends BuildTask
         } else {
             echo "<h2><br />${string}</h2>";
         }
+    }
+
+    private function isExcludedPath(string $path): bool
+    {
+        foreach ($this->excluded_absolute_paths as $excluded_path) {
+            if (str_starts_with(realpath($path), $excluded_path)) { // must resolve symlinks!
+                return true;
+            }
+        }
+        return false;
     }
 
     private function line($string)

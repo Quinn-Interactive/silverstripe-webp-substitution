@@ -13,7 +13,7 @@ images.
 ## Installation
 
 ```sh
-composer require quinninteractive/silverstripe-webp-substitution ^1.0.0
+composer require quinninteractive/silverstripe-webp-substitution ^2.0.0
 ```
 
 ## License
@@ -27,7 +27,9 @@ suffix to be used for WebP images, you can do that in the configuration.
 
 There is a default limit of 32 megapixels, over which conversion is not
 attempted. This is to avoid overtaxing the server's virtual memory. This
-setting can be overridden as shown below.
+setting can be overridden as shown below. If you change the
+`webp_file_suffix`, you must also change the suffix in your nginx
+configuration (see example below).
 
 ```yaml
 QuinnInteractive\WebPSub\Task\ConvertImagesToWebpTask:
@@ -67,6 +69,11 @@ map $http_accept $webp_dir {
     default   "";
     "~*image/webp"  "/assets/.webp/";
 }
+
+map $arg_nowebp $accept_webp {
+    default   $webp_dir;
+    '1'    "/fail-on-purpose/";
+}
 ```
 
 ### In the `server` section, before the main assets `location` directive
@@ -74,10 +81,10 @@ map $http_accept $webp_dir {
 ```nginx
 # first try to return allowed webp
 location ~ ^/assets/.*\.(?i:gif|jpeg|jpg|png)$ {
-    try_files $webp_dir$uri.webp $uri /index.php?$query_string;
+    try_files $accept_webp$uri.webp $uri /index.php?$query_string;
 }
 
-# Never serve ^.protected or ^.webp
+# Never serve .protected, nor .webp not served above
 location ~ ^/assets/\.(webp|protected)/ {
     return 403;
 }
@@ -96,4 +103,14 @@ make it writable by the web server.
 
 ## Version
 
-2.0.0
+2.1.0
+
+## Release notes
+
+### 2.1.0
+
+This version introduces a backward-compatible feature so that converted
+WebP files are not used in the CMS. To take advantage of this new
+feature, you need to change your nginx configuration (see example
+above). If you do not make the changes, your site will work just as it
+did in earlier versions, so this is a non-breaking change.
