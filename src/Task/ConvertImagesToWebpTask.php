@@ -68,16 +68,16 @@ class ConvertImagesToWebpTask extends BuildTask
                 $relativePath = $this->relativePath($path);
                 $mimeType = mime_content_type($path);
                 if (!in_array($mimeType, $this->mime_types)) {
-                    $this->line("${relativePath}");
-                    $this->line("- Wrong MimeType: ${mimeType}");
+                    $this->line("{$relativePath}");
+                    $this->line("- Wrong MimeType: {$mimeType}");
                     $broken++;
                 } else {
                     $size_info = getimagesize($path);
                     if (false !== $size_info) {
                         $megapixels = ($size_info[0] * $size_info[1]) / (1024 * 1024);
                         if ($megapixels > Config::inst()->get(static::class, 'size_limit_megapixels')) {
-                            $this->line("${relativePath}");
-                            $this->line("- too big: ${megapixels} megapixels");
+                            $this->line("{$relativePath}");
+                            $this->line("- too big: {$megapixels} megapixels");
                             $too_big++;
                             continue;
                         }
@@ -85,7 +85,7 @@ class ConvertImagesToWebpTask extends BuildTask
                     $webpPath = $this->webpPath($path);
                     // if the webp file doesn't exist or is newer than the original, create it
                     if (!file_exists($webpPath) || (filemtime($webpPath) < filemtime($path))) {
-                        $this->line("- converting: ${relativePath}");
+                        $this->line("- converting: {$relativePath}");
                         $reason = '   !! %s: %s';
                         try {
                             WebPConvert::convert($path, $webpPath);
@@ -131,9 +131,9 @@ class ConvertImagesToWebpTask extends BuildTask
     private function header($string)
     {
         if (Director::is_cli()) {
-            echo "\n## ${string} ##\n";
+            echo "\n## {$string} ##\n";
         } else {
-            echo "<h2><br />${string}</h2>";
+            echo "<h2><br />{$string}</h2>";
         }
     }
 
@@ -150,9 +150,9 @@ class ConvertImagesToWebpTask extends BuildTask
     private function line($string)
     {
         if (Director::is_cli()) {
-            echo "${string}\n";
+            echo "{$string}\n";
         } else {
-            echo "${string}<br />";
+            echo "{$string}<br />";
         }
     }
 
