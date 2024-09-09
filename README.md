@@ -103,9 +103,13 @@ make it writable by the web server.
 
 ## Version
 
-2.1.0
+2.1.1
 
 ## Release notes
+
+### 2.1.1
+
+Silverstripe 5 support.
 
 ### 2.1.0
 
