@@ -2,3 +2,8 @@
 .DS_Store
 /composer.lock
 /.php-cs-fixer.cache
+/phpstan.neon
+/.vscode/
+/public
+/resources
+/_resources
