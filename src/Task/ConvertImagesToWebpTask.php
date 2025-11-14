@@ -8,22 +8,24 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;
 use WebPConvert\Convert\Exceptions\ConversionFailedException;
 use WebPConvert\WebPConvert;
+use Symfony\Component\Console\Input\InputInterface;
+use SilverStripe\PolyExecution\PolyOutput;
 
 class ConvertImagesToWebpTask extends BuildTask
 {
-    protected $description = "Converts public PNG & JPEG images to WebP for browsers that support it";
+    protected static string $description = "Converts public PNG & JPEG images to WebP for browsers that support it";
     protected $mime_types = [
         'image/png',
         'image/jpeg',
         'image/jpg',
     ];
-    protected $title = "Converts public images to webp";
+    protected string $title = "Converts public images to webp";
     private array $excluded_absolute_paths = [];
     private static array $exclude_paths = [];
     private static $segment = 'webpconvert';
     private static $size_limit_megapixels = 32;
 
-    public function run($request)
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
         $start = time();
         set_time_limit(60 * 60);
@@ -121,6 +123,7 @@ class ConvertImagesToWebpTask extends BuildTask
         if (!Director::is_cli()) {
             echo '<p><a href="/dev/tasks">Tasks</a></p>' . "\n";
         }
+        return 1;
     }
 
     private function assetsdir()
@@ -140,7 +143,7 @@ class ConvertImagesToWebpTask extends BuildTask
     private function isExcludedPath(string $path): bool
     {
         foreach ($this->excluded_absolute_paths as $excluded_path) {
-            if (str_starts_with(realpath($path), $excluded_path)) { // must resolve symlinks!
+            if (str_starts_with(realpath($path), (string) $excluded_path)) { // must resolve symlinks!
                 return true;
             }
         }
@@ -159,12 +162,12 @@ class ConvertImagesToWebpTask extends BuildTask
     private function originalImagePath($path)
     {
         $prefix = $this->webpdir();
-        if (0 === strpos($path, $prefix)) {
-            $path = substr($path, strlen($prefix));
+        if (str_starts_with((string) $path, (string) $prefix)) {
+            $path = substr((string) $path, strlen((string) $prefix));
 
             // remove the .webp suffix
             $suffix = $this->config()->get('webp_file_suffix');
-            if (substr($path, -strlen($suffix)) === $suffix) {
+            if (str_ends_with($path, (string) $suffix)) {
                 $path = substr($path, 0, -strlen($suffix));
             }
             return Director::publicFolder() . $path;
@@ -175,8 +178,8 @@ class ConvertImagesToWebpTask extends BuildTask
     private function relativePath($path)
     {
         $prefix = Director::publicFolder();
-        if (0 === strpos($path, $prefix)) {
-            return substr($path, strlen($prefix));
+        if (str_starts_with((string) $path, $prefix)) {
+            return substr((string) $path, strlen($prefix));
         }
         return null;
     }
