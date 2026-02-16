@@ -22,7 +22,7 @@ class ConvertImagesToWebpTask extends BuildTask
     protected string $title = "Converts public images to webp";
     private array $excluded_absolute_paths = [];
     private static array $exclude_paths = [];
-    private static $segment = 'webpconvert';
+    protected static string $commandName = 'webpconvert';
     private static $size_limit_megapixels = 32;
 
     protected function execute(InputInterface $input, PolyOutput $output): int
