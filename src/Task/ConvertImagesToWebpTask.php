@@ -96,7 +96,7 @@ class ConvertImagesToWebpTask extends BuildTask
                             $failed++;
                             $output->writeln(sprintf($reason, 'conversion failed', $e->getShortMessage()));
                             continue;
-                        } catch (\Exception $e) {
+                        } catch (\Exception $e) { // @phpstan-ignore catch.neverThrown
                             $general_exception++;
                             $output->writeln(sprintf($reason, 'general exception', $e->getMessage()));
                             continue;
@@ -147,7 +147,7 @@ class ConvertImagesToWebpTask extends BuildTask
             // remove the .webp suffix
             $suffix = $this->config()->get('webp_file_suffix');
             if (str_ends_with($path, (string) $suffix)) {
-                $path = substr($path, 0, -strlen($suffix));
+                $path = substr($path, 0, -strlen((string) $suffix));
             }
             return Director::publicFolder() . $path;
         }
