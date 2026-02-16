@@ -11,7 +11,7 @@
     ],
     "license": "BSD-3-Clause",
     "require": {
-        "nette/finder": "^3.0",
+        "nette/utils": "^4.1",
         "rosell-dk/webp-convert": "^2.9",
         "silverstripe/admin": "^3.1",
         "silverstripe/framework": "^6"
@@ -26,7 +26,8 @@
         "rector/type-perfect": "^2.1"
     },
     "conflict": {
-        "silverstripe/s3": "*"
+        "silverstripe/s3": "*",
+        "nette/finder": "*"
     },
     "autoload": {
         "psr-4": {
