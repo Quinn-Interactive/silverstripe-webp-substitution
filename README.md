@@ -1,6 +1,6 @@
 # Silverstripe WebP substitution
 
-This module provides a task, `ConvertImagesToWebpTask`, which is to be
+This module provides a task, `tasks:webpconvert`, which is to be
 run periodically to provide WebP substitutes for all existing public
 images.
 
@@ -41,7 +41,7 @@ QuinnInteractive\WebPSub\Task\ConvertImagesToWebpTask:
 ## Command-line example
 
 ```sh
-sudo -Eu www ./vendor/bin/sake dev/tasks/webpconvert
+sudo -Eu www ./vendor/bin/sake tasks:webpconvert
 ```
 
 ## Crontab example
@@ -52,7 +52,7 @@ SAKE=./vendor/bin/sake
 SUDO=/usr/local/bin/sudo
 
 # WebP graphics conversion task every hour
-50 * * * *    (cd $DOCROOT && $SUDO -Eu www $SAKE dev/tasks/webpconvert) > /dev/null 2>&1
+50 * * * *    (cd $DOCROOT && $SUDO -Eu www $SAKE tasks:webpconvert) > /dev/null 2>&1
 ```
 
 ## Nginx configuration example
@@ -103,9 +103,19 @@ make it writable by the web server.
 
 ## Version
 
-2.1.1
+3.0.0
 
 ## Release notes
+
+### 3.0.0
+
+Silverstripe 6 support.
+
+This module uses `nette/utils` where it previously used `nette/finder`,
+which has been abandoned and folded into `nette/utils`. For that reason,
+we have flagged this module as conflicting with `nette/finder` so that
+it won't load into a site still using `nette/finder`. This is so we
+don't introduce duplicate classes.
 
 ### 2.1.1
 
