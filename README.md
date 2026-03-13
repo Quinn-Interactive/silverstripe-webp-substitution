@@ -103,9 +103,13 @@ make it writable by the web server.
 
 ## Version
 
-2.1.1
+2.1.2
 
 ## Release notes
+
+### 2.1.2
+
+Replace nette/finder with successor module.
 
 ### 2.1.1
 
